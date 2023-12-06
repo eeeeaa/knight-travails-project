@@ -21,15 +21,9 @@
 const BOARD_SIZE = 8;
 
 class Vertex {
-  constructor(value, neighbors) {
-    this.value = value;
-    this.neighbors = neighbors;
-  }
-}
-
-class Graph {
-  constructor(adjacencyList) {
-    this.adjacencyList = adjacencyList;
+  constructor(pos, previousVert) {
+    this.pos = pos;
+    this.previousVert = previousVert;
   }
 }
 
@@ -40,24 +34,54 @@ class Graph {
  */
 function knightMoves(startPos, endPos) {
   if (!isValidMove(startPos) || !isValidMove(endPos)) return null;
-  //TODO
-  const chessGraph = generateChessGraph(BOARD_SIZE);
-}
+  let queue = [];
+  let visited = [];
+  let vertex = null;
 
-function generateChessGraph(size) {
-  const array = [];
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
-      const vertex = new Vertex([i, j], getPossibleKnightMoves([i, j]));
-      array.push(vertex);
+  queue.push(new Vertex(startPos, null));
+  visited.push(new Vertex(startPos, null));
+
+  while (queue.length > 0) {
+    vertex = queue.shift();
+
+    if (vertex.pos[0] === endPos[0] && vertex.pos[1] === endPos[1]) {
+      break;
+    }
+
+    let neighbors = getPossibleKnightMoves(vertex.pos);
+
+    for (let neighbor of neighbors) {
+      if (
+        visited.find(
+          (item) => item.pos[0] === neighbor[0] && item.pos[1] === neighbor[1]
+        ) != null
+      ) {
+        continue;
+      }
+
+      let nextVertex = new Vertex(neighbor, vertex);
+      queue.push(nextVertex);
+      visited.push(nextVertex);
     }
   }
-  return new Graph(array);
+
+  return getVertexArray(vertex);
+}
+
+function getVertexArray(vertex) {
+  let stack = [];
+  let currentVert = vertex;
+  while (currentVert != null) {
+    stack.unshift(currentVert.pos);
+    currentVert = currentVert.previousVert;
+  }
+  return stack;
 }
 
 function isValidMove(pos) {
-  if (pos[0] > 7 || pos[0] < 0) return false;
-  if (pos[1] > 7 || pos[1] < 0) return false;
+  if (pos[0] == null || pos[1] == null) return false;
+  if (pos[0] > BOARD_SIZE - 1 || pos[0] < 0) return false;
+  if (pos[1] > BOARD_SIZE - 1 || pos[1] < 0) return false;
   return true;
 }
 
